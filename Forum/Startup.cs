@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Forum.Data;
+using Forum.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,17 +32,31 @@ namespace Forum
             });
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>()
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddDefaultTokenProviders()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Add, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Edit, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Delete, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName));
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Block, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName));
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Comment, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
+            });
+
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app,
+             IHostingEnvironment env,
+             UserManager<IdentityUser> userManager,
+             RoleManager<IdentityRole> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -65,12 +75,14 @@ namespace Forum
             app.UseCookiePolicy();
 
             app.UseAuthentication();
+            MyIdentityDataService.SeedData(userManager, roleManager);
+
 
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=ForumPosts}/{action=Index}/{id?}");
             });
         }
     }

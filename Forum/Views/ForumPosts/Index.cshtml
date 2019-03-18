@@ -1,0 +1,66 @@
+﻿@model IEnumerable<Forum.Models.ForumPost>
+@using Forum.Services;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService Authorization
+@{
+    var canAdd = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Add)).Succeeded;
+    var canEdit = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Edit)).Succeeded;
+    var canDelete = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Delete)).Succeeded;
+}
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Forum Posts</h1>
+    @if (canAdd)
+     { 
+        <p>
+            <a asp-action="Create">Create New</a>
+        </p>
+     }
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Body)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Posted)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td class="summary">
+                        @Html.DisplayFor(modelItem => item.Body)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Posted)
+                    </td>
+                    <td>
+                        @if (canEdit)
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.Id">Edit | </a>
+                        }
+
+                        @if (canDelete)
+                        {
+                            <a asp-action="Delete" asp-route-id="@item.Id"> Delete |</a>
+                        }
+
+                        <a asp-action="Details" asp-route-id="@item.Id"> Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
