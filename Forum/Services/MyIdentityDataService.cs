@@ -11,12 +11,15 @@ namespace Forum.Services
         public const string SiteAdminRoleName = "SiteAdmin";
         public const string AuthenticatedRoleName = "Authenticated";
         public const string AnonymousRoleName = "Anonymous";
+        public const string BlockedRoleName = "Blocked";
 
         public const string ForumPolicy_Add = "CanAddForumPosts";
         public const string ForumPolicy_Edit = "CanEditForumPosts";
         public const string ForumPolicy_Delete = "CanDeleteForumPosts";
         public const string ForumPolicy_Block = "CanBlockForumPosts";
         public const string ForumPolicy_Comment = "CanCommentForumPosts";
+        public const string ForumPolicy_Blocked = "IsBlocked";
+
 
         internal static void SeedData(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {

@@ -5,6 +5,7 @@
 @{
     var canEdit = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Edit)).Succeeded;
     var canComment = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Comment)).Succeeded;
+    var isBlocked = (await Authorization.AuthorizeAsync(User, MyIdentityDataService.ForumPolicy_Blocked)).Succeeded;
 }
 @{
     ViewData["Title"] = "Details";
@@ -49,15 +50,19 @@
     </dl>
 </div>
 <div>
-    @if (canEdit)
+    @if (canEdit && !isBlocked)
     {
-        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <p>
+            <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        </p>   
     }
-    <a asp-action="Index">Back to List</a>
-    
+
+        <p>
+            <a asp-action="Index">Back to List</a>
+        </p>
 </div>
 
-@if (canComment)
+@if (canComment && !isBlocked)
 {
     <p>
         <a asp-action="Comment" asp-route-id="@Model.Id">Comment</a>
@@ -67,13 +72,12 @@
 
 <h4><strong>Comments:</strong></h4>
 <table>
-    @if (Model.Comments != null && Model.Comments.Any())
+    @if (Model.PostComments != null && Model.PostComments.Any())
     {
         <tr>
-            @foreach (var comment in Model.Comments)
+            @foreach (var comment in Model.PostComments)
             {
-                <td>@comment.Body</td>
-                <td>@comment.Date</td>
+            <td>@comment.Comments.Body</td>
             }
             
         </tr>

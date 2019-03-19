@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Forum.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190318031358_AddTopic2")]
-    partial class AddTopic2
+    [Migration("20190318201517_AddPost2")]
+    partial class AddPost2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,8 +26,6 @@ namespace Forum.Data.Migrations
                     b.Property<string>("Body");
 
                     b.Property<DateTime>("Date");
-
-                    b.Property<string>("Name");
 
                     b.Property<int?>("PostId");
 
@@ -45,6 +43,8 @@ namespace Forum.Data.Migrations
 
                     b.Property<string>("Body");
 
+                    b.Property<string>("CommentsString");
+
                     b.Property<DateTime>("Posted");
 
                     b.Property<string>("Title");
@@ -54,6 +54,19 @@ namespace Forum.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ForumPosts");
+                });
+
+            modelBuilder.Entity("Forum.Models.PostComment", b =>
+                {
+                    b.Property<int>("PostId");
+
+                    b.Property<int>("CommentId");
+
+                    b.HasKey("PostId", "CommentId");
+
+                    b.HasIndex("CommentId");
+
+                    b.ToTable("PostComments");
                 });
 
             modelBuilder.Entity("Forum.Models.PostTopic", b =>
@@ -245,8 +258,21 @@ namespace Forum.Data.Migrations
             modelBuilder.Entity("Forum.Models.Comment", b =>
                 {
                     b.HasOne("Forum.Models.ForumPost", "Post")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("PostId");
+                });
+
+            modelBuilder.Entity("Forum.Models.PostComment", b =>
+                {
+                    b.HasOne("Forum.Models.Comment", "Comments")
+                        .WithMany("PostComments")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Forum.Models.ForumPost", "Post")
+                        .WithMany("PostComments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Forum.Models.PostTopic", b =>

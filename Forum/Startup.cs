@@ -44,6 +44,7 @@ namespace Forum
                 options.AddPolicy(MyIdentityDataService.ForumPolicy_Add, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
                 options.AddPolicy(MyIdentityDataService.ForumPolicy_Edit, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
                 options.AddPolicy(MyIdentityDataService.ForumPolicy_Delete, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName));
+                options.AddPolicy(MyIdentityDataService.ForumPolicy_Blocked, policy => policy.RequireRole(MyIdentityDataService.BlockedRoleName));
                 options.AddPolicy(MyIdentityDataService.ForumPolicy_Block, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName));
                 options.AddPolicy(MyIdentityDataService.ForumPolicy_Comment, policy => policy.RequireRole(MyIdentityDataService.TopicAdminRoleName, MyIdentityDataService.SiteAdminRoleName, MyIdentityDataService.AuthenticatedRoleName));
             });

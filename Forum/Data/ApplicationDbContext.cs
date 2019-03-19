@@ -20,6 +20,9 @@ namespace Forum.Data
             builder.Entity<PostTopic>()
                 .HasKey(t => new { t.PostId, t.TopicId });
 
+            builder.Entity<PostComment>()
+                .HasKey(t => new { t.PostId, t.CommentId });
+
             builder.Entity<PostTopic>()
                 .HasOne(pt => pt.Post)
                 .WithMany(p => p.PostTopics)
@@ -30,15 +33,20 @@ namespace Forum.Data
                 .WithMany(t => t.PostTopics)
                 .HasForeignKey(pt => pt.TopicId);
 
-            builder.Entity<ForumPost>()
-                .HasMany(t => t.Comments)
-                .WithOne(s => s.Post);
+            builder.Entity<PostComment>()
+                .HasOne(ct => ct.Post)
+                .WithMany(c => c.PostComments)
+                .HasForeignKey(ct => ct.PostId);
 
-            builder.Entity<ForumPost>().HasKey(t => t.Id);
-            builder.Entity<Comment>().HasKey(s => s.Id);
+            builder.Entity<PostComment>()
+                .HasOne(ct => ct.Comments)
+                .WithMany(c => c.PostComments)
+                .HasForeignKey(ct => ct.CommentId);
+
         }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Forum.Models.PostComment> PostComments { get; set; }
         public DbSet<Topic> Topics { get; set; }
         public DbSet<Forum.Models.PostTopic> PostTopics { get; set; }
     }    

@@ -80,18 +80,64 @@ namespace Forum.Controllers
             return View(forumPost);
         }
 
-        public async Task<IActionResult> Comment([Bind("Id,Body")] Comment comment)
-        { 
+        [Authorize(Policy = MyIdentityDataService.ForumPolicy_Comment)]
+        public async Task<IActionResult> Comment(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var forumPost = await _context.ForumPosts.FindAsync(id);
+            if (forumPost == null)
+            {
+                return NotFound();
+            }
+            var view = View(forumPost);
+
+            return view;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Policy = MyIdentityDataService.ForumPolicy_Comment)]
+        public async Task<IActionResult> Comment(int id, [Bind("Id,TopicsString")] ForumPost forumPost)
+        {
+            if (id != forumPost.Id)
+            {
+                return NotFound();
+            }
 
             if (ModelState.IsValid)
             {
-                comment.Date = DateTime.Now;
-                _context.Update(comment);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    if (!String.IsNullOrWhiteSpace(forumPost.TopicsString))
+                    {
+                        forumPost.PostComments = new List<PostComment>();
+                        var comment = new Comment { Body = forumPost.TopicsString };
+                        forumPost.PostComments.Add(new PostComment { PostId = forumPost.Id, Comments = comment });
+                    }
+
+                    _context.Update(forumPost);
+                    await _context.SaveChangesAsync();
+
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ForumPostExists(forumPost.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(comment);
+            return View(forumPost);
         }
 
         // GET: BlogPosts/Edit/5
@@ -196,7 +242,36 @@ namespace Forum.Controllers
             _context.ForumPosts.Remove(forumPost);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }   
+        }
+
+        [Authorize(Policy = MyIdentityDataService.ForumPolicy_Block)]
+        public async Task<IActionResult> Block(string name)
+        {
+            if (name == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(m => m.UserName == name);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        [ValidateAntiForgeryToken]
+        [Authorize(Policy = MyIdentityDataService.ForumPolicy_Block)]
+        public async Task<IActionResult> BlockConfirmed(string name, UserManager<IdentityRole> userManager)
+        {
+            var user = userManager.FindByNameAsync(name).Result;
+            //var user = await _context.Users.FindAsync(name);
+                        
+            userManager.AddToRoleAsync(user, MyIdentityDataService.BlockedRoleName).GetAwaiter().GetResult();
+            return RedirectToAction(nameof(Index));
+        }
 
         private bool ForumPostExists(int id)
         {

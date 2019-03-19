@@ -12,7 +12,7 @@ namespace Forum.Models
         public string Body { get; set; }
         public DateTime Posted { get; set; }
         public List<PostTopic> PostTopics { get; set; }
-        public List<Comment> Comments { get; set; }
+        public List<PostComment> PostComments { get; set; }
         public string TopicsString { get; set; }
     }
 }
